@@ -1,7 +1,7 @@
 import { Plus } from '@phosphor-icons/react'
 import type { Screen } from '../../types/domain'
 
-type PageHeadingProps = { screen: Screen; onCreate: () => void }
+type PageHeadingProps = { screen: Screen; onCreate?: () => void }
 
 const copy: Record<Screen, [string, string]> = {
   Resumen: ['Buen día, equipo.', 'Organizá la estructura académica y planificá el próximo cuatrimestre desde un único lugar.'],
@@ -19,5 +19,5 @@ const copy: Record<Screen, [string, string]> = {
 
 export function PageHeading({ screen, onCreate }: PageHeadingProps) {
   const [title, subtitle] = copy[screen]
-  return <div className="page-heading"><div><div className="eyebrow">SECRETARÍA ACADÉMICA</div><h1>{title}</h1><p>{subtitle}</p></div>{screen !== 'Resumen' && <button className="primary-button heading-action" onClick={onCreate}><Plus size={17} /> {screen === 'Regularidad' ? 'Nueva validación' : 'Crear nuevo'}</button>}</div>
+  return <div className="page-heading"><div><div className="eyebrow">SECRETARÍA ACADÉMICA</div><h1>{title}</h1><p>{subtitle}</p></div>{screen !== 'Resumen' && onCreate && <button className="primary-button heading-action" onClick={onCreate}><Plus size={17} /> Crear nuevo</button>}</div>
 }

@@ -37,3 +37,14 @@ src/
 ```
 
 Los datos de prueba están en `src/data/mocks.ts`. Cuando conectemos Spring Boot, cada llamada se agregará dentro de `src/services/api/`, sin tener que modificar la estructura visual de las pantallas.
+
+La demo actual persiste los cambios en `localStorage` durante el desarrollo. Se pueden reiniciar limpiando los datos del sitio desde el navegador.
+
+## Flujos mock disponibles
+
+- Carreras, planes y asignaturas: alta, edición, búsqueda, filtro por estado, desactivación y restauración.
+- Correlatividades: selección de asignatura, alta y baja de requisitos previos.
+- Sedes y aulas: alta de sedes y aulas, edición, control de capacidad y desactivación.
+- Asignaciones: alta y edición de horarios con detección de superposiciones por aula.
+- Períodos y turnos: alta, edición, filtros y validación de rangos de fechas.
+- Regularidad: validación de asistencia mínima del 75 % y promedio mínimo de 6.
