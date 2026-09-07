@@ -10,9 +10,34 @@ type DashboardLayoutProps = {
   closeSidebar: () => void
   openSidebar: () => void
   openModal: (kind: ModalKind) => void
+  perfilNombre?: string
+  perfilSubtitulo?: string
+  onLogout?: () => void
   children: ReactNode
 }
 
-export function DashboardLayout({ screen, sidebarOpen, navigate, closeSidebar, openSidebar, openModal, children }: DashboardLayoutProps) {
-  return <div className="app-shell"><Sidebar screen={screen} open={sidebarOpen} navigate={navigate} close={closeSidebar} /><section className="workspace"><Topbar screen={screen} openMenu={openSidebar} openModal={openModal} /><main className="page-content">{children}</main></section></div>
+export function DashboardLayout({
+  screen,
+  sidebarOpen,
+  navigate,
+  closeSidebar,
+  openSidebar,
+  openModal,
+  perfilNombre,
+  perfilSubtitulo,
+  onLogout,
+  children,
+}: DashboardLayoutProps) {
+  return <div className="app-shell">
+    <Sidebar
+      screen={screen}
+      open={sidebarOpen}
+      navigate={navigate}
+      close={closeSidebar}
+      perfilNombre={perfilNombre}
+      perfilSubtitulo={perfilSubtitulo}
+      onLogout={onLogout}
+    />
+    <section className="workspace"><Topbar screen={screen} openMenu={openSidebar} openModal={openModal} /><main className="page-content">{children}</main></section>
+  </div>
 }

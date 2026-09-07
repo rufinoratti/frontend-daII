@@ -1,0 +1,72 @@
+import { SignIn, WarningCircle } from '@phosphor-icons/react'
+import { useState, type FormEvent } from 'react'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { EMAIL_USUARIO_DEMO } from '../../app/modoDemo'
+import { iniciarSesion } from '../../services/usuarios/usuariosSlice'
+
+export function LoginView() {
+  const dispatch = useAppDispatch()
+  const { cargando, error } = useAppSelector((state) => state.usuarios)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const enviar = (event: FormEvent) => {
+    event.preventDefault()
+    dispatch(iniciarSesion({ email, password }))
+  }
+
+  return (
+    <div className="auth-shell">
+      <form className="panel auth-card" onSubmit={enviar}>
+        <div className="brand auth-brand">
+          <span className="brand-mark">U</span>
+          <span>
+            <strong>UADEnet</strong>
+            <small>Gestión académica</small>
+          </span>
+        </div>
+        <h1>Iniciar sesión</h1>
+        <p className="muted-copy">Usá tu cuenta administrativa para acceder al sistema.</p>
+
+        {error && (
+          <div className="form-error summary" role="alert">
+            <WarningCircle size={17} /> {error}
+          </div>
+        )}
+
+        <div className="form-grid single-column">
+          <label>
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="admin@universidad.edu.ar"
+              required
+              autoFocus
+            />
+          </label>
+          <label>
+            Contraseña
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </label>
+        </div>
+
+        <button className="primary-button" type="submit" disabled={cargando}>
+          <SignIn size={17} /> {cargando ? 'Ingresando...' : 'Ingresar'}
+        </button>
+
+        <p className="auth-hint">
+          Modo demo: ingresá con <code>{EMAIL_USUARIO_DEMO}</code> para explorar la app con datos
+          de prueba, sin necesidad de tener información cargada en el backend.
+        </p>
+      </form>
+    </div>
+  )
+}
