@@ -147,12 +147,15 @@ export interface ResultadoRegularidad {
   motivos: string[]
 }
 
-export type Permiso = 'ADMINISTRATIVO' | 'USUARIO'
+export type Permiso = string
 export interface Usuario {
-  id: number
+  id: string
   nombre: string
   email: string
   permiso: Permiso
+  roles: string[]
+  permissions: string[]
+  status: string
   activo: boolean
 }
 export interface CrearUsuario {

@@ -14,7 +14,10 @@ Frontend del módulo 9 del TPO de Desarrollo de Aplicaciones II.
 2. Ejecutá `npm install`.
 3. Ejecutá `npm run dev`.
 
-La aplicación se conectará al backend de Spring Boot mediante la variable `VITE_API_URL`.
+Configurá `VITE_CORE_URL` con la URL base de CORE (por ejemplo, `https://core`). El portal
+inicia sesión en CORE y consume este módulo mediante el gateway
+`/api/v1/academic/*`; no se conecta al backend de forma directa. El access token queda sólo
+en memoria y el refresh token lo administra CORE en una cookie `HttpOnly`.
 
 ## Estructura del frontend
 

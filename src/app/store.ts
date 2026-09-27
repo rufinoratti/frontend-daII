@@ -27,10 +27,8 @@ export const store = configureStore({
   },
 })
 
-// El backend autentica por cookie de sesion, no por token: la cookie ya la
-// tiene el navegador (si el usuario logueo antes), pero Redux arranca vacio
-// en cada carga de pagina. Esta llamada reconstruye el estado "logueado" a
-// partir de esa cookie sin pedirle credenciales de nuevo al usuario.
+// El access token no persiste en el navegador. Al iniciar se rota el refresh
+// token HttpOnly en CORE y se reconstruye la sesion en memoria.
 store.dispatch(obtenerUsuarioActual())
 
 export type RootState = ReturnType<typeof store.getState>

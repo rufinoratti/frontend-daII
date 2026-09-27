@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { usuariosService } from './usuariosService'
+import { refrescarAccessToken } from '../api/authAxios'
 import { extraerMensajeError } from '../api/erroresApi'
 import type { CrearUsuario, LoginUsuario, Usuario } from '../../types/api'
 
@@ -48,6 +49,7 @@ export const obtenerUsuarioActual = createAsyncThunk<Usuario, void, { rejectValu
   'usuarios/obtenerActual',
   async (_, { rejectWithValue }) => {
     try {
+      await refrescarAccessToken()
       return await usuariosService.actual()
     } catch (error) {
       return rejectWithValue(extraerMensajeError(error))
