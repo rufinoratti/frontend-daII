@@ -10,6 +10,7 @@ const copy: Record<Screen, [string, string]> = {
   Asignaturas: ['Asignaturas', 'Mantené el catálogo de materias y sus datos académicos.'],
   Correlatividades: ['Correlatividades', 'Definí qué asignaturas debe aprobar un estudiante antes de cursar otra.'],
   'Sedes y aulas': ['Sedes y aulas', 'Organizá los espacios físicos disponibles por sede y capacidad.'],
+  Cursos: ['Cursos', 'Administrá cursos, docentes, inscripciones, resultados y horarios.'],
   Asignaciones: ['Asignaciones', 'Distribuí cursos, aulas y horarios evitando superposiciones.'],
   Agenda: ['Agenda', 'Consultá la ocupación de cada aula por fecha.'],
   Períodos: ['Períodos académicos', 'Definí las fechas que ordenan cada ciclo lectivo.'],

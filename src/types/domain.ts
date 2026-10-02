@@ -7,6 +7,7 @@ export type Screen =
   | 'Asignaturas'
   | 'Correlatividades'
   | 'Sedes y aulas'
+  | 'Cursos'
   | 'Asignaciones'
   | 'Agenda'
   | 'Períodos'
