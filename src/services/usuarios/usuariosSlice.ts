@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { isAxiosError } from 'axios'
 import { usuariosService } from './usuariosService'
 import { extraerMensajeError } from '../api/erroresApi'
 import type { CrearUsuario, LoginUsuario, Usuario } from '../../types/api'
@@ -25,6 +26,9 @@ export const iniciarSesion = createAsyncThunk<Usuario, LoginUsuario, { rejectVal
     try {
       return await usuariosService.login(datos)
     } catch (error) {
+      if (isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
+        return rejectWithValue('El email o la contraseña son incorrectos.')
+      }
       return rejectWithValue(extraerMensajeError(error, 'Email o contrasena incorrectos'))
     }
   },

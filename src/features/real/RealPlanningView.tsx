@@ -48,14 +48,15 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
   }
 
   return <>
-    <div className="campus-strip">{sedesFiltradas.map((sede) => (
+    <div className="section-title"><span><h2>Sedes</h2></span></div>
+    <div className="list-meta"><span>{sedes.items.length} sedes</span><button className="text-button" onClick={() => setFormSede((v) => !v)}>{formSede ? 'Cancelar' : '+ Nueva sede'}</button></div>
+    <div className="campus-strip" style={{ marginTop: 0 }}>{sedesFiltradas.map((sede) => (
       <button key={sede.id} className={sede.id === sedeId ? 'selected' : ''} style={{ border: 0, background: 'none', cursor: 'pointer' }} onClick={() => setSedeId(sede.id)}>
         <span><MapPin size={18} /> {sede.nombre}</span>
       </button>
     ))}</div>
     {sedes.error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {sedes.error}</div>}
 
-    <div className="list-meta"><span>{sedes.items.length} sedes</span><button className="text-button" onClick={() => setFormSede((v) => !v)}>{formSede ? 'Cancelar' : '+ Nueva sede'}</button></div>
     {formSede && (
       <article className="panel" style={{ marginBottom: 18 }}>
         <div className="form-grid">
@@ -66,6 +67,7 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
       </article>
     )}
 
+    <div className="section-title"><span><h2>Aulas</h2></span></div>
     {!sedeId
       ? <p className="muted-copy">Elegí una sede arriba para ver y crear sus aulas.</p>
       : <>
