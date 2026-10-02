@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Topbar } from '../components/layout/Topbar'
-import type { ModalKind, Screen } from '../types/domain'
+import type { Screen } from '../types/domain'
 
 type DashboardLayoutProps = {
   screen: Screen
@@ -9,7 +9,6 @@ type DashboardLayoutProps = {
   navigate: (screen: Screen) => void
   closeSidebar: () => void
   openSidebar: () => void
-  openModal: (kind: ModalKind) => void
   perfilNombre?: string
   perfilSubtitulo?: string
   onLogout?: () => void
@@ -22,7 +21,6 @@ export function DashboardLayout({
   navigate,
   closeSidebar,
   openSidebar,
-  openModal,
   perfilNombre,
   perfilSubtitulo,
   onLogout,
@@ -38,6 +36,6 @@ export function DashboardLayout({
       perfilSubtitulo={perfilSubtitulo}
       onLogout={onLogout}
     />
-    <section className="workspace"><Topbar screen={screen} openMenu={openSidebar} openModal={openModal} /><main className="page-content">{children}</main></section>
+    <section className="workspace"><Topbar screen={screen} openMenu={openSidebar} /><main className="page-content">{children}</main></section>
   </div>
 }
