@@ -7,6 +7,7 @@ import correlatividadesReducer from '../services/correlatividades/correlatividad
 import sedesReducer from '../services/sedes/sedesSlice'
 import aulasReducer from '../services/aulas/aulasSlice'
 import asignacionesReducer from '../services/asignaciones/asignacionesSlice'
+import cursosReducer from '../services/cursos/cursosSlice'
 import periodosReducer from '../services/periodos/periodosSlice'
 import turnosExamenReducer from '../services/turnosExamen/turnosExamenSlice'
 import regularidadReducer from '../services/regularidad/regularidadSlice'
@@ -21,6 +22,7 @@ export const store = configureStore({
     sedes: sedesReducer,
     aulas: aulasReducer,
     asignaciones: asignacionesReducer,
+    cursos: cursosReducer,
     periodos: periodosReducer,
     turnosExamen: turnosExamenReducer,
     regularidad: regularidadReducer,

@@ -51,3 +51,7 @@ La demo actual persiste los cambios en `localStorage` durante el desarrollo. Se 
 - Asignaciones: alta y edición de horarios con detección de superposiciones por aula.
 - Períodos y turnos: alta, edición, filtros y validación de rangos de fechas.
 - Regularidad: validación de asistencia mínima del 75 % y promedio mínimo de 6.
+
+## Cursos conectados al backend
+
+En una sesión conectada al backend, la pantalla **Cursos** permite crear y filtrar cursos por período, consultar su detalle, actualizar el estado, asignar docentes, inscribir alumnos, cargar resultados y agregar horarios por aula. Consume `/api/planificacion/cursos` y sus rutas anidadas de docentes, inscripciones y horarios; los errores de validación de capacidad, fechas, sede y superposición se muestran desde la respuesta del backend. El usuario de demostración conserva una vista de cursos de ejemplo local.

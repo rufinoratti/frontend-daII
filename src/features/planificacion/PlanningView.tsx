@@ -1,6 +1,6 @@
 import { ArrowCounterClockwise, CaretDown, CheckCircle, MapPin, PencilSimple, Plus, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { rooms as fallbackRooms } from '../../data/mocks'
+import { courses as fallbackCourses, rooms as fallbackRooms } from '../../data/mocks'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Toolbar } from '../../components/ui/Toolbar'
 import type { Assignment, Campus, Room, Screen } from '../../types/domain'
@@ -10,11 +10,31 @@ type PlanningViewProps = { screen: Screen; query: string; setQuery: (value: stri
 
 export function PlanningView({ screen, query, setQuery, onCreate, onCreateCampus, onNotify, rooms = fallbackRooms, campuses, assignments = [], onEditRoom, onDeactivateRoom, onRestoreRoom, onEditAssignment, onDeactivateAssignment }: PlanningViewProps) {
   const [roomStatus, setRoomStatus] = useState('')
+  if (screen === 'Cursos') return <MockCourses query={query} onNotify={onNotify} />
   if (screen === 'Agenda') return <Agenda assignments={assignments} onNotify={onNotify} />
   if (screen === 'Asignaciones') return <Assignments assignments={assignments} onNotify={onNotify} onCreate={onCreate} onEdit={onEditAssignment} onDeactivate={onDeactivateAssignment} />
 
   const rows = rooms.filter((room) => `${room.name} ${room.campus} ${room.type}`.toLowerCase().includes(query.toLowerCase()) && (!roomStatus || room.status === roomStatus))
   return <><Toolbar query={query} setQuery={setQuery} placeholder="Buscar sede o aula..." filterValue={roomStatus} onFilterChange={setRoomStatus} filterOptions={['Disponible', 'En uso', 'Inactiva']} action={<span className="toolbar-actions"><button className="secondary-button" onClick={onCreateCampus}><Plus size={17} /> Nueva sede</button><button className="primary-button" onClick={onCreate}><Plus size={17} /> Nueva aula</button></span>} /><div className="section-title"><span><h2>Sedes</h2></span></div><div className="campus-strip">{(campuses ?? [{ id: 1, name: 'Monserrat', roomsCount: 18 }, { id: 2, name: 'Recoleta', roomsCount: 9 }, { id: 3, name: 'Pilar', roomsCount: 7 }]).map((campus) => <span key={campus.id}><MapPin size={18} /> {campus.name} <b>{campus.roomsCount} aulas</b></span>)}</div><div className="section-title"><span><h2>Aulas</h2></span></div><div className="table-wrap"><table><thead><tr><th>Aula</th><th>Sede</th><th>Tipo</th><th>Capacidad</th><th>Estado</th><th aria-label="Acciones" /></tr></thead><tbody>{rows.map((room) => <tr key={room.id}><td><strong>{room.name}</strong></td><td>{room.campus}</td><td>{room.type}</td><td>{room.capacity} personas</td><td><span className={`status ${room.status === 'Disponible' ? 'success' : 'warning'}`}><i />{room.status}</span></td><td><button className="row-action" onClick={() => onEditRoom ? onEditRoom(room.id) : onNotify(`Editando ${room.name}`)} aria-label={`Editar ${room.name}`}><PencilSimple size={17} /></button>{room.status !== 'En uso' && room.status !== 'Inactiva' && onDeactivateRoom && <button className="row-action danger" onClick={() => onDeactivateRoom(room.id)} aria-label={`Desactivar ${room.name}`}><Trash size={17} /></button>}{room.status === 'Inactiva' && onRestoreRoom && <button className="row-action" onClick={() => onRestoreRoom(room.id)} aria-label={`Restaurar ${room.name}`}><ArrowCounterClockwise size={17} /></button>}</td></tr>)}</tbody></table>{rows.length === 0 && <EmptyState query={query} />}</div></>
+}
+
+function MockCourses({ query, onNotify }: { query: string; onNotify: (value: string) => void }) {
+  const rows = fallbackCourses.filter((course) =>
+    `${course.code} ${course.name} ${course.career}`.toLowerCase().includes(query.toLowerCase()),
+  )
+  return <>
+    <div className="list-meta">
+      <span>Vista de demostración · Los cursos se administran desde una sesión conectada al backend.</span>
+      <button className="text-button" type="button" onClick={() => onNotify('La administración de cursos requiere una sesión conectada al backend.')}>Acerca de cursos</button>
+    </div>
+    <div className="table-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Asignatura</th><th>Carrera</th><th>Año</th><th>Créditos</th><th>Estado</th></tr></thead>
+        <tbody>{rows.map((course) => <tr key={course.id}><td><strong>{course.code}</strong></td><td>{course.name}</td><td>{course.career}</td><td>{course.year}</td><td>{course.credits}</td><td>{course.status}</td></tr>)}</tbody>
+      </table>
+      {rows.length === 0 && <EmptyState query={query} />}
+    </div>
+  </>
 }
 
 function Assignments({ assignments, onNotify, onCreate, onEdit, onDeactivate }: { assignments: Assignment[]; onNotify: (value: string) => void; onCreate: () => void; onEdit?: (id: number) => void; onDeactivate?: (id: number) => void }) {

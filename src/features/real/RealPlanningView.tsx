@@ -5,10 +5,12 @@ import { EmptyState } from '../../components/ui/EmptyState'
 import { crearSede, listarSedes } from '../../services/sedes/sedesSlice'
 import { crearAula, listarAulas } from '../../services/aulas/aulasSlice'
 import { crearAsignacion, obtenerAgenda } from '../../services/asignaciones/asignacionesSlice'
+import { CursosPanel } from './CursosPanel'
 import type { Screen } from '../../types/domain'
 
 export function RealPlanningView({ screen, query, onNotify }: { screen: Screen; query: string; setQuery: (v: string) => void; onNotify: (v: string) => void }) {
   if (screen === 'Agenda') return <AgendaPanel onNotify={onNotify} />
+  if (screen === 'Cursos') return <CursosPanel query={query} onNotify={onNotify} />
   if (screen === 'Asignaciones') return <AsignacionesPanel onNotify={onNotify} />
   return <SedesYAulasPanel query={query} onNotify={onNotify} />
 }

@@ -88,7 +88,7 @@ function AppMock() {
     "Asignaturas",
     "Correlatividades",
   ];
-  const planningScreens: Screen[] = ["Sedes y aulas", "Asignaciones", "Agenda"];
+  const planningScreens: Screen[] = ["Sedes y aulas", "Cursos", "Asignaciones", "Agenda"];
   const cycleScreens: Screen[] = ["Períodos", "Turnos de examen"];
   const campuses = useMemo(
     () =>

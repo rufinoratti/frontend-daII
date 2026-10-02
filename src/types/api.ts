@@ -105,6 +105,79 @@ export interface CrearAsignacion {
   cantidadEstudiantes: number
 }
 
+export interface Curso {
+  id: number
+  codigo: string
+  asignaturaId: number
+  periodoId: number
+  sedeId: number
+  modalidad: string
+  estado: string
+  cupoMaximo: number
+  fechaInicio: string
+  fechaFin: string
+}
+export interface CrearCurso {
+  codigo: string
+  asignaturaId: number
+  periodoId: number
+  sedeId: number
+  modalidad: string
+  estado: string
+  cupoMaximo: number
+  fechaInicio: string
+  fechaFin: string
+}
+
+export interface DocenteCurso {
+  id: number
+  cursoId: number
+  docenteId: string
+  rol: string
+}
+export interface AsignarDocenteCurso {
+  docenteId: string
+  rol: string
+}
+
+export interface InscripcionCurso {
+  id: number
+  cursoId: number
+  alumnoId: string
+  fechaInscripcion: string
+  estado: string
+  notaFinal: number | null
+  fechaResultado: string | null
+}
+export interface GuardarInscripcionCurso {
+  alumnoId: string
+  fechaInscripcion: string
+  estado: string
+  notaFinal?: number | null
+  fechaResultado?: string | null
+}
+
+export interface HorarioCurso {
+  id: number
+  cursoId: number
+  aulaId: number
+  diaSemana: string
+  horaInicio: string
+  horaFin: string
+}
+export interface CrearHorarioCurso {
+  aulaId: number
+  diaSemana: string
+  horaInicio: string
+  horaFin: string
+}
+
+export interface CursoDetalle extends Curso {
+  docentes: DocenteCurso[]
+  inscripciones: InscripcionCurso[]
+  horarios: HorarioCurso[]
+}
+
 export interface PeriodoAcademico {
   id: number
   anio: number
