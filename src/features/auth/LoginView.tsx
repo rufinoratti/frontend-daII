@@ -1,4 +1,4 @@
-import { SignIn, WarningCircle } from '@phosphor-icons/react'
+import { Eye, EyeSlash, SignIn, WarningCircle } from '@phosphor-icons/react'
 import { useState, type FormEvent } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { EMAIL_USUARIO_DEMO } from '../../app/modoDemo'
@@ -9,6 +9,7 @@ export function LoginView() {
   const { cargando, error } = useAppSelector((state) => state.usuarios)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mostrarPassword, setMostrarPassword] = useState(false)
 
   const enviar = (event: FormEvent) => {
     event.preventDefault()
@@ -46,16 +47,28 @@ export function LoginView() {
               autoFocus
             />
           </label>
-          <label>
-            Contraseña
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </label>
+          <div className="password-form-field">
+            <label htmlFor="login-password">Contraseña</label>
+            <div className="password-field">
+              <input
+                id="login-password"
+                type={mostrarPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                className="password-toggle"
+                type="button"
+                aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={mostrarPassword}
+                onClick={() => setMostrarPassword((mostrar) => !mostrar)}
+              >
+                {mostrarPassword ? <EyeSlash size={19} aria-hidden="true" /> : <Eye size={19} aria-hidden="true" />}
+              </button>
+            </div>
+          </div>
         </div>
 
         <button className="primary-button" type="submit" disabled={cargando}>
