@@ -1,7 +1,8 @@
-import { Check, PencilSimple, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { Check, GraduationCap, PencilSimple, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { AcademicSelect, type AcademicSelectOption } from '../../components/ui/AcademicSelect'
 import { Toolbar } from '../../components/ui/Toolbar'
 import {
   actualizarCarrera,
@@ -15,12 +16,49 @@ import {
   crearCorrelatividad,
   listarCorrelatividades,
 } from '../../services/correlatividades/correlatividadesSlice'
-import type { Carrera, CrearCarrera, EstadoAcademico, TipoCorrelatividad } from '../../types/api'
+import type { Asignatura, Carrera, CrearCarrera, EstadoAcademico, PlanDeEstudio, TipoCorrelatividad } from '../../types/api'
 import type { Screen } from '../../types/domain'
 
 type Props = { screen: Screen; query: string; setQuery: (value: string) => void; onNotify: (value: string) => void }
 
-const estadoClase: Record<EstadoAcademico, string> = { ACTIVA: 'success', BORRADOR: 'draft', INACTIVA: 'warning' }
+type EstadoOptionTone = 'success' | 'draft' | 'warning'
+const estadoClase: Record<EstadoAcademico, EstadoOptionTone> = { ACTIVA: 'success', BORRADOR: 'draft', INACTIVA: 'warning' }
+const estadoEtiqueta: Record<EstadoAcademico, string> = { ACTIVA: 'Activa', BORRADOR: 'Borrador', INACTIVA: 'Inactiva' }
+
+const opcionesCarrera = (items: Carrera[]): AcademicSelectOption[] => items.map((carrera) => ({
+  value: String(carrera.id),
+  code: carrera.codigo,
+  label: carrera.nombre,
+  description: carrera.facultad,
+  meta: carrera.duracion + ' · ' + carrera.titulo,
+  badge: estadoEtiqueta[carrera.estado],
+  badgeTone: estadoClase[carrera.estado],
+}))
+
+const fechaLegible = (value: string) => {
+  const [year, month, day] = value.slice(0, 10).split('-')
+  return year && month && day ? day + '/' + month + '/' + year : value
+}
+
+const opcionesPlan = (items: PlanDeEstudio[]): AcademicSelectOption[] => items.map((plan) => ({
+  value: String(plan.id),
+  code: plan.codigo,
+  label: plan.nombre,
+  description: 'Vigente desde ' + fechaLegible(plan.vigenciaDesde),
+  meta: plan.cantidadAsignaturas + ' asignaturas',
+  badge: estadoEtiqueta[plan.estado],
+  badgeTone: estadoClase[plan.estado],
+}))
+
+const opcionesAsignatura = (items: Asignatura[]): AcademicSelectOption[] => items.map((asignatura) => ({
+  value: String(asignatura.id),
+  code: asignatura.codigo,
+  label: asignatura.nombre,
+  description: 'Año ' + asignatura.anio + ' · ' + asignatura.creditos + ' créditos',
+  meta: asignatura.cargaHoraria + ' hs de cursada',
+  badge: estadoEtiqueta[asignatura.estado],
+  badgeTone: estadoClase[asignatura.estado],
+}))
 
 export function RealAcademicView({ screen, query, setQuery, onNotify }: Props) {
   if (screen === 'Carreras') return <CarrerasPanel query={query} setQuery={setQuery} onNotify={onNotify} />
@@ -124,6 +162,7 @@ function PlanesPanel({ onNotify }: { onNotify: (value: string) => void }) {
   const [carreraId, setCarreraId] = useState<number | null>(null)
   const [formAbierto, setFormAbierto] = useState(false)
   const [valores, setValores] = useState({ codigo: '', nombre: '', vigenciaDesde: '', cantidadAsignaturas: '' })
+  const carreraSeleccionada = carreras.items.find((carrera) => carrera.id === carreraId)
 
   useEffect(() => {
     dispatch(listarCarreras())
@@ -147,17 +186,43 @@ function PlanesPanel({ onNotify }: { onNotify: (value: string) => void }) {
   }
 
   return <>
-    <div className="form-grid single-column" style={{ maxWidth: 360 }}>
-      <label>Carrera
-        <select value={carreraId ?? ''} onChange={(e) => setCarreraId(e.target.value ? Number(e.target.value) : null)}>
-          <option value="">Seleccioná una carrera...</option>
-          {carreras.items.map((carrera) => <option key={carrera.id} value={carrera.id}>{carrera.codigo} · {carrera.nombre}</option>)}
-        </select>
-      </label>
-    </div>
+    {carreras.error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {carreras.error}</div>}
+    <section className="panel academic-selection-panel">
+      <div className="academic-selection-header">
+        <span className="academic-selection-icon"><GraduationCap size={20} aria-hidden="true" /></span>
+        <div className="academic-selection-copy">
+          <span className="academic-selection-kicker">PLANES POR CARRERA</span>
+          <h2>Elegí una carrera</h2>
+          <p>Buscá por nombre, código o facultad. El selector muestra su duración y el título que otorga.</p>
+        </div>
+      </div>
+      <AcademicSelect
+        label="Carrera"
+        value={carreraId ? String(carreraId) : ''}
+        onChange={(value) => setCarreraId(value ? Number(value) : null)}
+        options={opcionesCarrera(carreras.items)}
+        placeholder="Seleccioná una carrera"
+        searchPlaceholder="Buscar carrera por código, nombre o facultad"
+        helperText="Elegí una carrera para consultar o crear sus planes de estudio."
+        emptyMessage="Todavía no hay carreras disponibles."
+        noResultsMessage="No hay carreras que coincidan con esa búsqueda."
+        loading={carreras.cargando}
+        clearable
+      />
+      {carreraSeleccionada && (
+        <div className="academic-context" aria-label="Datos de la carrera seleccionada">
+          <div className="academic-context-item"><small>FACULTAD</small><strong>{carreraSeleccionada.facultad}</strong></div>
+          <div className="academic-context-item"><small>DURACIÓN</small><strong>{carreraSeleccionada.duracion}</strong></div>
+          <div className="academic-context-item"><small>TÍTULO</small><strong>{carreraSeleccionada.titulo}</strong></div>
+        </div>
+      )}
+    </section>
 
     {!carreraId
-      ? <p className="muted-copy">Elegí una carrera para ver y crear sus planes de estudio.</p>
+      ? <div className="academic-next-step">
+          <span className="academic-next-step__icon"><GraduationCap size={19} aria-hidden="true" /></span>
+          <div><strong>Los planes aparecerán aquí</strong><p>Seleccioná una carrera para consultar los planes vigentes y crear uno nuevo.</p></div>
+        </div>
       : <>
           {planes.error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {planes.error}</div>}
           <div className="list-meta"><span>{planes.items.length} planes</span><button className="text-button" onClick={() => setFormAbierto((v) => !v)}>{formAbierto ? 'Cancelar' : '+ Crear plan'}</button></div>
@@ -234,19 +299,34 @@ function AsignaturasPanel({ onNotify }: { onNotify: (value: string) => void }) {
   }
 
   return <>
-    <div className="form-grid" style={{ maxWidth: 620 }}>
-      <label>Carrera
-        <select value={carreraId ?? ''} onChange={(e) => seleccionarCarrera(e.target.value)}>
-          <option value="">Seleccioná una carrera...</option>
-          {carreras.items.map((carrera) => <option key={carrera.id} value={carrera.id}>{carrera.codigo} · {carrera.nombre}</option>)}
-        </select>
-      </label>
-      <label>Plan de estudio
-        <select value={planId ?? ''} onChange={(e) => setPlanId(e.target.value ? Number(e.target.value) : null)} disabled={!carreraId}>
-          <option value="">Seleccioná un plan...</option>
-          {planes.items.map((plan) => <option key={plan.id} value={plan.id}>{plan.codigo} · {plan.nombre}</option>)}
-        </select>
-      </label>
+    <div className="academic-filter-grid">
+      <AcademicSelect
+        label="Carrera"
+        value={carreraId ? String(carreraId) : ''}
+        onChange={seleccionarCarrera}
+        options={opcionesCarrera(carreras.items)}
+        placeholder="Seleccioná una carrera"
+        searchPlaceholder="Buscar por nombre, código o facultad"
+        helperText="La carrera determina los planes disponibles."
+        emptyMessage="Todavía no hay carreras disponibles."
+        noResultsMessage="No hay carreras que coincidan con esa búsqueda."
+        loading={carreras.cargando}
+        clearable
+      />
+      <AcademicSelect
+        label="Plan de estudio"
+        value={planId ? String(planId) : ''}
+        onChange={(value) => setPlanId(value ? Number(value) : null)}
+        options={opcionesPlan(planes.items)}
+        placeholder="Seleccioná un plan"
+        searchPlaceholder="Buscar plan por nombre o código"
+        helperText={carreraId ? 'Elegí el plan donde vas a crear la asignatura.' : 'Primero elegí una carrera.'}
+        emptyMessage="Esta carrera todavía no tiene planes."
+        noResultsMessage="No hay planes que coincidan con esa búsqueda."
+        loading={planes.cargando}
+        disabled={!carreraId}
+        clearable
+      />
     </div>
 
     {!planId
@@ -333,25 +413,48 @@ function CorrelatividadesPanel({ onNotify }: { onNotify: (value: string) => void
   }
 
   return <>
-    <div className="form-grid" style={{ maxWidth: 620 }}>
-      <label>Carrera
-        <select value={carreraId ?? ''} onChange={(e) => seleccionarCarrera(e.target.value)}>
-          <option value="">Seleccioná una carrera...</option>
-          {carreras.items.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.nombre}</option>)}
-        </select>
-      </label>
-      <label>Plan de estudio
-        <select value={planId ?? ''} onChange={(e) => seleccionarPlan(e.target.value)} disabled={!carreraId}>
-          <option value="">Seleccioná un plan...</option>
-          {planes.items.map((p) => <option key={p.id} value={p.id}>{p.codigo} · {p.nombre}</option>)}
-        </select>
-      </label>
-      <label>Asignatura
-        <select value={asignaturaId ?? ''} onChange={(e) => setAsignaturaId(e.target.value ? Number(e.target.value) : null)} disabled={!planId}>
-          <option value="">Seleccioná una asignatura...</option>
-          {asignaturas.items.map((a) => <option key={a.id} value={a.id}>{a.codigo} · {a.nombre}</option>)}
-        </select>
-      </label>
+    <div className="academic-filter-grid">
+      <AcademicSelect
+        label="Carrera"
+        value={carreraId ? String(carreraId) : ''}
+        onChange={seleccionarCarrera}
+        options={opcionesCarrera(carreras.items)}
+        placeholder="Seleccioná una carrera"
+        searchPlaceholder="Buscar por nombre, código o facultad"
+        helperText="Elegí primero la carrera del plan."
+        emptyMessage="Todavía no hay carreras disponibles."
+        noResultsMessage="No hay carreras que coincidan con esa búsqueda."
+        loading={carreras.cargando}
+        clearable
+      />
+      <AcademicSelect
+        label="Plan de estudio"
+        value={planId ? String(planId) : ''}
+        onChange={seleccionarPlan}
+        options={opcionesPlan(planes.items)}
+        placeholder="Seleccioná un plan"
+        searchPlaceholder="Buscar plan por nombre o código"
+        helperText={carreraId ? 'Seleccioná el plan con las asignaturas.' : 'Primero elegí una carrera.'}
+        emptyMessage="Esta carrera todavía no tiene planes."
+        noResultsMessage="No hay planes que coincidan con esa búsqueda."
+        loading={planes.cargando}
+        disabled={!carreraId}
+        clearable
+      />
+      <AcademicSelect
+        label="Asignatura"
+        value={asignaturaId ? String(asignaturaId) : ''}
+        onChange={(value) => setAsignaturaId(value ? Number(value) : null)}
+        options={opcionesAsignatura(asignaturas.items)}
+        placeholder="Seleccioná una asignatura"
+        searchPlaceholder="Buscar asignatura por código o nombre"
+        helperText={planId ? 'Elegí la materia cuyas correlatividades querés revisar.' : 'Primero elegí un plan.'}
+        emptyMessage="Este plan todavía no tiene asignaturas."
+        noResultsMessage="No hay asignaturas que coincidan con esa búsqueda."
+        loading={asignaturas.cargando}
+        disabled={!planId}
+        clearable
+      />
     </div>
 
     {!asignaturaId
@@ -367,14 +470,32 @@ function CorrelatividadesPanel({ onNotify }: { onNotify: (value: string) => void
             </div>
           })}
           <div className="correlative-add">
-            <select value={correlativaId} onChange={(e) => setCorrelativaId(e.target.value)} aria-label="Seleccionar correlativa">
-              <option value="">Seleccionar asignatura...</option>
-              {opciones.map((a) => <option key={a.id} value={a.id}>{a.codigo} · {a.nombre}</option>)}
-            </select>
-            <select value={tipo} onChange={(e) => setTipo(e.target.value as TipoCorrelatividad)} aria-label="Tipo de correlatividad">
-              <option value="REGULAR">Regular</option>
-              <option value="APROBADA">Aprobada</option>
-            </select>
+            <AcademicSelect
+              label="Materia correlativa"
+              value={correlativaId}
+              onChange={setCorrelativaId}
+              options={opcionesAsignatura(opciones)}
+              placeholder="Seleccioná una asignatura"
+              searchPlaceholder="Buscar correlativa por código o nombre"
+              helperText="Materia que debe regularizarse o aprobarse antes."
+              emptyMessage="No hay otras asignaturas disponibles."
+              noResultsMessage="No hay asignaturas que coincidan con esa búsqueda."
+              loading={asignaturas.cargando}
+              clearable
+            />
+            <AcademicSelect
+              label="Requisito"
+              value={tipo}
+              onChange={(value) => setTipo(value as TipoCorrelatividad)}
+              options={[
+                { value: 'REGULAR', label: 'Regular', description: 'Alcanza con tener la materia regularizada.' },
+                { value: 'APROBADA', label: 'Aprobada', description: 'La materia debe estar aprobada.' },
+              ]}
+              placeholder="Elegí el requisito"
+              searchPlaceholder="Buscar requisito"
+              helperText="Definí qué condición tiene que cumplir."
+              emptyMessage="No hay requisitos disponibles."
+            />
             <button className="secondary-button" onClick={agregar}><Plus size={16} /> Agregar correlativa</button>
           </div>
         </article>}
