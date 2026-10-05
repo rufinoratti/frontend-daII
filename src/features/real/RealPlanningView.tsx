@@ -1,12 +1,190 @@
 import { Check, MapPin, Plus, WarningCircle } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { CalendarDatePicker } from '../../components/ui/CalendarDatePicker'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { crearSede, listarSedes } from '../../services/sedes/sedesSlice'
 import { crearAula, listarAulas } from '../../services/aulas/aulasSlice'
 import { crearAsignacion, obtenerAgenda } from '../../services/asignaciones/asignacionesSlice'
 import { CursosPanel } from './CursosPanel'
 import type { Screen } from '../../types/domain'
+
+const opcionesCapacidadAula = Array.from({ length: 100 }, (_, index) => index + 1)
+const opcionesAsignacion = Array.from({ length: 100 }, (_, index) => index + 1)
+const horasDisponibles = Array.from({ length: 17 }, (_, index) => index + 7)
+const minutosDisponibles = Array.from({ length: 12 }, (_, index) => index * 5)
+
+function SelectorHora({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const [abierto, setAbierto] = useState(false)
+  const [paso, setPaso] = useState<'hora' | 'minutos'>('hora')
+  const [horaTemporal, setHoraTemporal] = useState(7)
+  const [minutosTemporales, setMinutosTemporales] = useState(0)
+  const contenedor = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!abierto) return
+    const cerrarAlHacerClickAfuera = (event: MouseEvent) => {
+      if (!contenedor.current?.contains(event.target as Node)) setAbierto(false)
+    }
+    const cerrarConEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAbierto(false)
+    }
+    document.addEventListener('mousedown', cerrarAlHacerClickAfuera)
+    document.addEventListener('keydown', cerrarConEscape)
+    return () => {
+      document.removeEventListener('mousedown', cerrarAlHacerClickAfuera)
+      document.removeEventListener('keydown', cerrarConEscape)
+    }
+  }, [abierto])
+
+  const abrir = () => {
+    const [hora, minutos] = value ? value.split(':').map(Number) : [7, 0]
+    setHoraTemporal(hora)
+    setMinutosTemporales(minutos)
+    setPaso('hora')
+    setAbierto((actual) => !actual)
+  }
+
+  const seleccionarHora = (hora: number) => {
+    setHoraTemporal(hora)
+    if (hora === 23) setMinutosTemporales(0)
+    setPaso('minutos')
+  }
+
+  const seleccionarMinutos = (minutos: number) => {
+    setMinutosTemporales(minutos)
+    setPaso('minutos')
+  }
+
+  const anguloSeleccionado = (paso === 'hora' ? (horaTemporal % 12) * 30 : minutosTemporales * 6) - 90
+  const radioSeleccionado = paso === 'hora' && horaTemporal > 12 ? 65 : 103
+  const xManecilla = 130 + radioSeleccionado * Math.cos((anguloSeleccionado * Math.PI) / 180)
+  const yManecilla = 130 + radioSeleccionado * Math.sin((anguloSeleccionado * Math.PI) / 180)
+  const horaFormateada = String(horaTemporal).padStart(2, '0')
+  const minutosFormateados = String(minutosTemporales).padStart(2, '0')
+
+  const posicionOpcion = (indice: number, total: number, radio: number) => {
+    const angulo = (indice * (360 / total) - 90) * Math.PI / 180
+    return { left: 130 + radio * Math.cos(angulo), top: 130 + radio * Math.sin(angulo) }
+  }
+
+  const confirmar = () => {
+    onChange(`${horaFormateada}:${minutosFormateados}`)
+    setAbierto(false)
+  }
+
+  return (
+    <div ref={contenedor} style={{ position: 'relative' }}>
+      <label>
+        {label}
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={abierto}
+          onClick={abrir}
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 12px',
+            color: value ? 'inherit' : '#7a8497',
+            background: '#fff',
+            border: '1px solid #cbd2df',
+            borderRadius: 8,
+            textAlign: 'left',
+          }}
+        >
+          {value || 'Seleccioná una hora...'} <span aria-hidden="true">▾</span>
+        </button>
+      </label>
+      {abierto && (
+        <div
+          role="dialog"
+          aria-label={`Elegir ${label.toLowerCase()}`}
+          style={{
+            position: 'absolute',
+            zIndex: 20,
+            top: '100%',
+            left: 0,
+            width: 'min(320px, calc(100vw - 40px))',
+            padding: 18,
+            background: '#fff',
+            border: '1px solid #d8deea',
+            borderRadius: 14,
+            boxShadow: '0 12px 32px rgba(27, 43, 73, 0.22)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+            <button
+              type="button"
+              onClick={() => setPaso('hora')}
+              aria-pressed={paso === 'hora'}
+              style={{ border: 0, borderRadius: 8, padding: '6px 10px', background: paso === 'hora' ? '#e8edff' : 'transparent', color: '#283c82', fontSize: 32, fontWeight: 600 }}
+            >
+              {horaFormateada}
+            </button>
+            <span style={{ alignSelf: 'center', fontSize: 30, color: '#667085' }}>:</span>
+            <button
+              type="button"
+              onClick={() => setPaso('minutos')}
+              aria-pressed={paso === 'minutos'}
+              style={{ border: 0, borderRadius: 8, padding: '6px 10px', background: paso === 'minutos' ? '#e8edff' : 'transparent', color: '#283c82', fontSize: 32, fontWeight: 600 }}
+            >
+              {minutosFormateados}
+            </button>
+          </div>
+          <div aria-label={paso === 'hora' ? 'Elegí una hora' : 'Elegí los minutos'} style={{ position: 'relative', width: 260, height: 260, maxWidth: '100%', margin: '0 auto', borderRadius: '50%', background: '#f0f2f8' }}>
+            <svg aria-hidden="true" viewBox="0 0 260 260" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
+              <line x1="130" y1="130" x2={xManecilla} y2={yManecilla} stroke="#4459a8" strokeWidth="2" />
+              <circle cx={xManecilla} cy={yManecilla} r="16" fill="#4459a8" />
+              <circle cx="130" cy="130" r="4" fill="#4459a8" />
+            </svg>
+            {paso === 'hora'
+              ? horasDisponibles.map((hora) => {
+                const posicion = posicionOpcion(hora % 12, 12, hora > 12 ? 65 : 103)
+                const seleccionada = hora === horaTemporal
+                return (
+                  <button
+                    key={hora}
+                    type="button"
+                    aria-label={`${hora} horas`}
+                    aria-pressed={seleccionada}
+                    onClick={() => seleccionarHora(hora)}
+                    style={{ position: 'absolute', ...posicion, transform: 'translate(-50%, -50%)', zIndex: 1, width: 34, height: 34, padding: 0, border: 0, borderRadius: '50%', background: seleccionada ? '#4459a8' : 'transparent', color: seleccionada ? '#fff' : '#26314b', fontSize: 14, fontWeight: seleccionada ? 700 : 500 }}
+                  >
+                    {hora}
+                  </button>
+                )
+              })
+              : minutosDisponibles.map((minutos, indice) => {
+                const posicion = posicionOpcion(indice, 12, 103)
+                const seleccionada = minutos === minutosTemporales
+                const deshabilitado = horaTemporal === 23 && minutos !== 0
+                return (
+                  <button
+                    key={minutos}
+                    type="button"
+                    aria-label={`${minutos} minutos`}
+                    aria-pressed={seleccionada}
+                    disabled={deshabilitado}
+                    onClick={() => seleccionarMinutos(minutos)}
+                    style={{ position: 'absolute', ...posicion, transform: 'translate(-50%, -50%)', zIndex: 1, width: 38, height: 38, padding: 0, border: 0, borderRadius: '50%', background: seleccionada ? '#4459a8' : 'transparent', color: seleccionada ? '#fff' : deshabilitado ? '#b9bfcc' : '#26314b', fontSize: 13, fontWeight: seleccionada ? 700 : 500, cursor: deshabilitado ? 'default' : 'pointer' }}
+                  >
+                    {String(minutos).padStart(2, '0')}
+                  </button>
+                )
+              })}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
+            <button type="button" className="text-button" onClick={() => setAbierto(false)}>Cancelar</button>
+            <button type="button" className="text-button" onClick={confirmar}>Aceptar</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function RealPlanningView({ screen, query, onNotify }: { screen: Screen; query: string; setQuery: (v: string) => void; onNotify: (v: string) => void }) {
   if (screen === 'Agenda') return <AgendaPanel onNotify={onNotify} />
@@ -31,7 +209,13 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
   const sedesFiltradas = sedes.items.filter((s) => `${s.nombre} ${s.direccion}`.toLowerCase().includes(query.toLowerCase()))
 
   const crearNuevaSede = async () => {
-    const resultado = await dispatch(crearSede(nuevaSede))
+    const nombre = nuevaSede.nombre.trim()
+    const direccion = nuevaSede.direccion.trim()
+    if (!nombre || !direccion) {
+      onNotify('Ingresá nombre y dirección para la sede.')
+      return
+    }
+    const resultado = await dispatch(crearSede({ nombre, direccion }))
     if (crearSede.fulfilled.match(resultado)) {
       onNotify('Sede creada correctamente')
       setNuevaSede({ nombre: '', direccion: '' })
@@ -41,7 +225,12 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
 
   const crearNuevaAula = async () => {
     if (!sedeId) return
-    const resultado = await dispatch(crearAula({ sedeId, datos: { codigo: nuevaAula.codigo, capacidadMaxima: Number(nuevaAula.capacidadMaxima) } }))
+    const capacidadMaxima = Number(nuevaAula.capacidadMaxima)
+    if (!Number.isInteger(capacidadMaxima) || capacidadMaxima < 1 || capacidadMaxima > 100) {
+      onNotify('Seleccioná una capacidad máxima entre 1 y 100.')
+      return
+    }
+    const resultado = await dispatch(crearAula({ sedeId, datos: { codigo: nuevaAula.codigo, capacidadMaxima } }))
     if (crearAula.fulfilled.match(resultado)) {
       onNotify('Aula creada correctamente')
       setNuevaAula({ codigo: '', capacidadMaxima: '' })
@@ -52,24 +241,73 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
   return <>
     <div className="section-title"><span><h2>Sedes</h2></span></div>
     <div className="list-meta"><span>{sedes.items.length} sedes</span><button className="text-button" onClick={() => setFormSede((v) => !v)}>{formSede ? 'Cancelar' : '+ Nueva sede'}</button></div>
-    <div className="campus-strip" style={{ marginTop: 0 }}>{sedesFiltradas.map((sede) => (
-      <button key={sede.id} className={sede.id === sedeId ? 'selected' : ''} style={{ border: 0, background: 'none', cursor: 'pointer' }} onClick={() => setSedeId(sede.id)}>
-        <span><MapPin size={18} /> {sede.nombre}</span>
-      </button>
-    ))}</div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 12 }}>
+      {sedesFiltradas.length === 0 ? (
+        <EmptyState query={query} />
+      ) : (
+        sedesFiltradas.map((sede) => {
+          const seleccionado = sede.id === sedeId
+          return (
+            <button
+              key={sede.id}
+              type="button"
+              aria-pressed={seleccionado}
+              onClick={() => setSedeId(sede.id)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: 8,
+                textAlign: 'left',
+                padding: '16px 18px',
+                borderRadius: 12,
+                border: `1px solid ${seleccionado ? '#4459a8' : '#d8deea'}`,
+                background: seleccionado ? '#eef2ff' : '#fff',
+                color: '#1b2b49',
+                boxShadow: seleccionado ? '0 4px 12px rgba(68, 89, 168, 0.12)' : '0 1px 2px rgba(27, 43, 73, 0.04)',
+                cursor: 'pointer',
+              }}
+            >
+              <strong style={{ fontSize: 15 }}>{sede.nombre}</strong>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4d5d7a', fontSize: 13 }}>
+                <MapPin size={14} />
+                {sede.direccion}
+              </span>
+            </button>
+          )
+        })
+      )}
+    </div>
+
+    {sedeId !== null && sedes.items.find((sede) => sede.id === sedeId) && (
+      <p className="muted-copy" style={{ marginTop: 12 }}><MapPin size={16} /> Dirección: {sedes.items.find((sede) => sede.id === sedeId)?.direccion}</p>
+    )}
     {sedes.error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {sedes.error}</div>}
 
     {formSede && (
       <article className="panel" style={{ marginBottom: 18 }}>
         <div className="form-grid">
-          <label>Nombre<input value={nuevaSede.nombre} onChange={(e) => setNuevaSede({ ...nuevaSede, nombre: e.target.value })} placeholder="Ej. Monserrat" /></label>
-          <label>Dirección<input value={nuevaSede.direccion} onChange={(e) => setNuevaSede({ ...nuevaSede, direccion: e.target.value })} placeholder="Ej. Av. Independencia 3651" /></label>
+          <label>Nombre
+            <input
+              value={nuevaSede.nombre}
+              onChange={(event) => setNuevaSede({ ...nuevaSede, nombre: event.target.value })}
+              placeholder="Ej. Sede Córdoba"
+            />
+          </label>
+          <label>Dirección
+            <input
+              value={nuevaSede.direccion}
+              onChange={(event) => setNuevaSede({ ...nuevaSede, direccion: event.target.value })}
+              placeholder="Ej. Av. San Martín 123, CABA"
+            />
+          </label>
         </div>
         <button className="primary-button" onClick={crearNuevaSede}><Check size={16} /> Guardar</button>
       </article>
     )}
 
-    <div className="section-title"><span><h2>Aulas</h2></span></div>
+    <div className="section-title" style={{ marginTop: 28 }}><span><h2>Aulas</h2></span></div>
     {!sedeId
       ? <p className="muted-copy">Elegí una sede arriba para ver y crear sus aulas.</p>
       : <>
@@ -79,7 +317,12 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
             <article className="panel" style={{ marginBottom: 18 }}>
               <div className="form-grid">
                 <label>Código<input value={nuevaAula.codigo} onChange={(e) => setNuevaAula({ ...nuevaAula, codigo: e.target.value })} placeholder="Ej. Aula 204" /></label>
-                <label>Capacidad máxima<input type="number" min="1" value={nuevaAula.capacidadMaxima} onChange={(e) => setNuevaAula({ ...nuevaAula, capacidadMaxima: e.target.value })} /></label>
+                <label>Capacidad máxima
+                  <select value={nuevaAula.capacidadMaxima} onChange={(e) => setNuevaAula({ ...nuevaAula, capacidadMaxima: e.target.value })}>
+                    <option value="">Seleccioná una capacidad...</option>
+                    {opcionesCapacidadAula.map((capacidad) => <option key={capacidad} value={capacidad}>{capacidad}</option>)}
+                  </select>
+                </label>
               </div>
               <button className="primary-button" onClick={crearNuevaAula}><Check size={16} /> Guardar</button>
             </article>
@@ -103,6 +346,19 @@ function AsignacionesPanel({ onNotify }: { onNotify: (v: string) => void }) {
   const [valores, setValores] = useState(asignacionVacia)
 
   const crear = async () => {
+    const valoresNumericos = [valores.aulaId, valores.asignaturaId, valores.cantidadEstudiantes]
+    if (valoresNumericos.some((valor) => !Number.isInteger(Number(valor)) || Number(valor) < 1 || Number(valor) > 100)) {
+      onNotify('Seleccioná valores entre 1 y 100 para aula, asignatura y cantidad de estudiantes.')
+      return
+    }
+    if (!valores.horaInicio || !valores.horaFin) {
+      onNotify('Seleccioná la hora de inicio y de fin.')
+      return
+    }
+    if (valores.horaInicio >= valores.horaFin) {
+      onNotify('La hora de fin debe ser posterior a la hora de inicio.')
+      return
+    }
     const resultado = await dispatch(crearAsignacion({
       aulaId: Number(valores.aulaId),
       asignaturaId: Number(valores.asignaturaId),
@@ -121,12 +377,35 @@ function AsignacionesPanel({ onNotify }: { onNotify: (v: string) => void }) {
     <p className="muted-copy">Los IDs de aula y asignatura se ven en las tablas de "Sedes y aulas" y "Asignaturas".</p>
     {error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {error}</div>}
     <div className="form-grid">
-      <label>ID de aula<input type="number" value={valores.aulaId} onChange={(e) => setValores({ ...valores, aulaId: e.target.value })} /></label>
-      <label>ID de asignatura<input type="number" value={valores.asignaturaId} onChange={(e) => setValores({ ...valores, asignaturaId: e.target.value })} /></label>
-      <label>Fecha<input type="date" value={valores.fecha} onChange={(e) => setValores({ ...valores, fecha: e.target.value })} /></label>
-      <label>Cantidad de estudiantes<input type="number" min="1" value={valores.cantidadEstudiantes} onChange={(e) => setValores({ ...valores, cantidadEstudiantes: e.target.value })} /></label>
-      <label>Hora de inicio<input type="time" value={valores.horaInicio} onChange={(e) => setValores({ ...valores, horaInicio: e.target.value })} /></label>
-      <label>Hora de fin<input type="time" value={valores.horaFin} onChange={(e) => setValores({ ...valores, horaFin: e.target.value })} /></label>
+      <label>ID de aula
+        <select value={valores.aulaId} onChange={(e) => setValores({ ...valores, aulaId: e.target.value })}>
+          <option value="">Seleccioná un aula...</option>
+          {opcionesAsignacion.map((id) => <option key={id} value={id}>{id}</option>)}
+        </select>
+      </label>
+      <label>ID de asignatura
+        <select value={valores.asignaturaId} onChange={(e) => setValores({ ...valores, asignaturaId: e.target.value })}>
+          <option value="">Seleccioná una asignatura...</option>
+          {opcionesAsignacion.map((id) => <option key={id} value={id}>{id}</option>)}
+        </select>
+      </label>
+      <CalendarDatePicker label="Fecha" value={valores.fecha} onChange={(fecha) => setValores({ ...valores, fecha })} />
+      <label>Cantidad de estudiantes
+        <select value={valores.cantidadEstudiantes} onChange={(e) => setValores({ ...valores, cantidadEstudiantes: e.target.value })}>
+          <option value="">Seleccioná una cantidad...</option>
+          {opcionesAsignacion.map((cantidad) => <option key={cantidad} value={cantidad}>{cantidad}</option>)}
+        </select>
+      </label>
+      <SelectorHora
+        label="Hora de inicio"
+        value={valores.horaInicio}
+        onChange={(horaInicio) => setValores({ ...valores, horaInicio })}
+      />
+      <SelectorHora
+        label="Hora de fin"
+        value={valores.horaFin}
+        onChange={(horaFin) => setValores({ ...valores, horaFin })}
+      />
     </div>
     <button className="primary-button" onClick={crear}><Plus size={16} /> Crear asignación</button>
   </article>
@@ -149,7 +428,7 @@ function AgendaPanel({ onNotify }: { onNotify: (v: string) => void }) {
   return <article className="panel">
     <div className="form-grid" style={{ maxWidth: 420 }}>
       <label>ID de aula<input type="number" value={aulaId} onChange={(e) => setAulaId(e.target.value)} /></label>
-      <label>Fecha<input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} /></label>
+      <CalendarDatePicker label="Fecha" value={fecha} onChange={setFecha} />
     </div>
     <button className="secondary-button" onClick={consultar}>Consultar agenda</button>
     {error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {error}</div>}

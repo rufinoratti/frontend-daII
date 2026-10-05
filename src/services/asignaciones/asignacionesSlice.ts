@@ -11,7 +11,6 @@ interface EstadoAsignaciones {
 
 const estadoInicial: EstadoAsignaciones = { agenda: [], cargando: false, error: null }
 
-// La agenda es la vista principal: aula + fecha puntual, tal como expone el back.
 export const obtenerAgenda = createAsyncThunk<
   Asignacion[],
   { aulaId: number; fecha: string },

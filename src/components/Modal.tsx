@@ -1,5 +1,6 @@
 import { Check, X } from '@phosphor-icons/react'
 import { useState, type FormEvent } from 'react'
+import { CalendarDatePicker } from './ui/CalendarDatePicker'
 import { MockTag } from './ui/MockTag'
 import type { ModalKind, ModalTarget } from '../types/domain'
 
@@ -13,6 +14,8 @@ type ModalProps = {
 }
 
 type Field = { name: string; label: string; placeholder: string; type?: string; min?: string; max?: string; step?: string }
+
+const opcionesAnio = [1, 2, 3, 4, 5]
 
 const fieldMap: Record<ModalKind, Field[]> = {
   career: [
@@ -118,5 +121,5 @@ export function Modal({ target, initialValues = {}, close, onSave }: ModalProps)
     close()
   }
 
-  return <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && close()}><form className="modal" onSubmit={submit} noValidate><div className="modal-head"><div><span className="form-kicker">{target.id ? 'EDITAR REGISTRO' : 'CREAR REGISTRO'} <MockTag /></span><h2>{title}</h2></div><button type="button" onClick={close} aria-label="Cerrar"><X size={20} /></button></div>{submitError && <div className="form-error summary" role="alert">{submitError}</div>}{fields.map((field) => <label key={field.name}>{field.label}<input value={values[field.name] ?? ''} onChange={(event) => update(field.name, event.target.value)} type={field.type ?? 'text'} min={field.min} max={field.max} step={field.step} placeholder={field.placeholder} autoFocus={field === fields[0]} aria-invalid={Boolean(errors[field.name])} />{errors[field.name] && <small className="field-error">{errors[field.name]}</small>}</label>)}<label>Descripción<textarea rows={3} placeholder="Información adicional (opcional)" /></label><div className="modal-actions"><button className="secondary-button" type="button" onClick={close}>Cancelar</button><button className="primary-button" type="submit"><Check size={17} /> {target.id ? 'Guardar cambios' : 'Guardar mock'}</button></div></form></div>
+  return <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && close()}><form className="modal" onSubmit={submit} noValidate><div className="modal-head"><div><span className="form-kicker">{target.id ? 'EDITAR REGISTRO' : 'CREAR REGISTRO'} <MockTag /></span><h2>{title}</h2></div><button type="button" onClick={close} aria-label="Cerrar"><X size={20} /></button></div>{submitError && <div className="form-error summary" role="alert">{submitError}</div>}{fields.map((field) => field.name === 'year' ? <label key={field.name}>{field.label}<select value={values[field.name] ?? ''} onChange={(event) => update(field.name, event.target.value)} aria-invalid={Boolean(errors[field.name])}><option value="">Seleccioná el año</option>{opcionesAnio.map((anio) => <option key={anio} value={String(anio)}>{anio}</option>)}</select>{errors[field.name] && <small className="field-error">{errors[field.name]}</small>}</label> : field.type === 'date' ? <div className="modal-date-field" key={field.name}><CalendarDatePicker label={field.label} value={values[field.name] ?? ''} onChange={(value) => update(field.name, value)} placeholder={field.placeholder} />{errors[field.name] && <small className="field-error">{errors[field.name]}</small>}</div> : <label key={field.name}>{field.label}<input value={values[field.name] ?? ''} onChange={(event) => update(field.name, event.target.value)} type={field.type ?? 'text'} min={field.min} max={field.max} step={field.step} placeholder={field.placeholder} autoFocus={field === fields[0]} aria-invalid={Boolean(errors[field.name])} />{errors[field.name] && <small className="field-error">{errors[field.name]}</small>}</label>)}<label>Descripción<textarea rows={3} placeholder="Información adicional (opcional)" /></label><div className="modal-actions"><button className="secondary-button" type="button" onClick={close}>Cancelar</button><button className="primary-button" type="submit"><Check size={17} /> {target.id ? 'Guardar cambios' : 'Guardar mock'}</button></div></form></div>
 }

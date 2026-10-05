@@ -1,6 +1,7 @@
 import { Check, GraduationCap, PencilSimple, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { CalendarDatePicker } from '../../components/ui/CalendarDatePicker'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { AcademicSelect, type AcademicSelectOption } from '../../components/ui/AcademicSelect'
 import { Toolbar } from '../../components/ui/Toolbar'
@@ -232,7 +233,7 @@ function PlanesPanel({ onNotify }: { onNotify: (value: string) => void }) {
               <div className="form-grid">
                 <label>Código<input value={valores.codigo} onChange={(e) => setValores({ ...valores, codigo: e.target.value })} placeholder="Ej. PLAN-2026" /></label>
                 <label>Nombre<input value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} placeholder="Ej. Plan de estudio 2026" /></label>
-                <label>Vigente desde<input type="date" value={valores.vigenciaDesde} onChange={(e) => setValores({ ...valores, vigenciaDesde: e.target.value })} /></label>
+                <CalendarDatePicker label="Vigente desde" value={valores.vigenciaDesde} onChange={(vigenciaDesde) => setValores({ ...valores, vigenciaDesde })} />
                 <label>Cantidad de asignaturas<input type="number" min="0" value={valores.cantidadAsignaturas} onChange={(e) => setValores({ ...valores, cantidadAsignaturas: e.target.value })} /></label>
               </div>
               <button className="primary-button" onClick={crear}><Check size={16} /> Guardar</button>
@@ -259,6 +260,10 @@ function PlanesPanel({ onNotify }: { onNotify: (value: string) => void }) {
         </>}
   </>
 }
+
+const opcionesCargaHoraria = [0, 68, 98, 108, 118, 168]
+const opcionesCreditos = [0, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+const opcionesAnio = [1, 2, 3, 4, 5]
 
 function AsignaturasPanel({ onNotify }: { onNotify: (value: string) => void }) {
   const dispatch = useAppDispatch()
@@ -287,6 +292,18 @@ function AsignaturasPanel({ onNotify }: { onNotify: (value: string) => void }) {
 
   const crear = async () => {
     if (!planId) return
+    if (valores.anio === '') {
+      onNotify('Seleccioná el año de cursada.')
+      return
+    }
+    if (valores.creditos === '') {
+      onNotify('Seleccioná la cantidad de créditos.')
+      return
+    }
+    if (valores.cargaHoraria === '') {
+      onNotify('Seleccioná una carga horaria.')
+      return
+    }
     const resultado = await dispatch(crearAsignatura({
       planId,
       datos: { ...valores, creditos: Number(valores.creditos), cargaHoraria: Number(valores.cargaHoraria) },
@@ -340,9 +357,24 @@ function AsignaturasPanel({ onNotify }: { onNotify: (value: string) => void }) {
               <div className="form-grid">
                 <label>Código<input value={valores.codigo} onChange={(e) => setValores({ ...valores, codigo: e.target.value })} placeholder="Ej. INF-306" /></label>
                 <label>Nombre<input value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} placeholder="Ej. Desarrollo de Aplicaciones II" /></label>
-                <label>Año<input value={valores.anio} onChange={(e) => setValores({ ...valores, anio: e.target.value })} placeholder="Ej. 3.º año" /></label>
-                <label>Créditos<input type="number" min="1" value={valores.creditos} onChange={(e) => setValores({ ...valores, creditos: e.target.value })} /></label>
-                <label>Carga horaria (hs)<input type="number" min="1" value={valores.cargaHoraria} onChange={(e) => setValores({ ...valores, cargaHoraria: e.target.value })} /></label>
+                <label>Año
+                  <select value={valores.anio} onChange={(e) => setValores({ ...valores, anio: e.target.value })}>
+                    <option value="">Seleccioná el año</option>
+                    {opcionesAnio.map((anio) => <option key={anio} value={anio}>{anio}</option>)}
+                  </select>
+                </label>
+                <label>Créditos
+                  <select value={valores.creditos} onChange={(e) => setValores({ ...valores, creditos: e.target.value })}>
+                    <option value="">Seleccioná los créditos</option>
+                    {opcionesCreditos.map((creditos) => <option key={creditos} value={creditos}>{creditos}</option>)}
+                  </select>
+                </label>
+                <label>Carga horaria (hs)
+                  <select value={valores.cargaHoraria} onChange={(e) => setValores({ ...valores, cargaHoraria: e.target.value })}>
+                    <option value="">Seleccioná una carga horaria</option>
+                    {opcionesCargaHoraria.map((horas) => <option key={horas} value={horas}>{horas}hs</option>)}
+                  </select>
+                </label>
               </div>
               <button className="primary-button" onClick={crear}><Check size={16} /> Guardar</button>
             </article>
