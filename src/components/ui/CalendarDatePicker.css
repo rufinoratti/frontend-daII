@@ -1,0 +1,127 @@
+.calendar-picker {
+  position: relative;
+  width: 100%;
+  display: grid;
+  gap: 7px;
+}
+
+.calendar-picker__label {
+  color: #5b7193;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.calendar-picker__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #cbd2df;
+  border-radius: 8px;
+  background: #fff;
+  color: #1b2b49;
+  font-size: 13px;
+  text-align: left;
+}
+
+.calendar-picker__trigger svg {
+  flex: 0 0 auto;
+  color: #52617b;
+}
+
+.modal-date-field {
+  margin-top: 15px;
+}
+
+.calendar-picker__popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(304px, calc(100vw - 40px));
+  padding: 14px;
+  border: 1px solid #d8deea;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(27 43 73 / 20%);
+}
+
+.calendar-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  color: #1b2b49;
+  text-transform: capitalize;
+}
+
+.calendar-picker__header button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #34456a;
+}
+
+.calendar-picker__header button:hover {
+  background: #eef1f7;
+}
+
+.calendar-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  text-align: center;
+}
+
+.calendar-picker__weekday,
+.calendar-picker__empty,
+.calendar-picker__day {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  justify-self: center;
+}
+
+.calendar-picker__weekday {
+  color: #707b90;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.calendar-picker__day {
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #27344e;
+  font-size: 13px;
+}
+
+.calendar-picker__day:hover {
+  background: #eef1f7;
+}
+
+.calendar-picker__day.is-today {
+  outline: 1px solid #6273b8;
+  outline-offset: -1px;
+}
+
+.calendar-picker__day.is-selected,
+.calendar-picker__day.is-selected:hover {
+  background: #4459a8;
+  color: #fff;
+}
+
+.calendar-picker__trigger:focus-visible,
+.calendar-picker__header button:focus-visible,
+.calendar-picker__day:focus-visible {
+  outline: 2px solid #4459a8;
+  outline-offset: 2px;
+}

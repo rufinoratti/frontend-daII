@@ -1,6 +1,7 @@
 import { ArrowLeft, Check, Plus, WarningCircle } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { CalendarDatePicker } from '../../components/ui/CalendarDatePicker'
 import { EmptyState } from '../../components/ui/EmptyState'
 import {
   agregarHorarioCurso,
@@ -26,6 +27,7 @@ const cursoVacio: CrearCurso = {
   fechaFin: '',
 }
 
+const periodoIds = Array.from({ length: 100 }, (_, index) => index + 1)
 const docenteVacio = { docenteId: '', rol: '' }
 const inscripcionVacia = { alumnoId: '', fechaInscripcion: '', estado: '' }
 const horarioVacio = { aulaId: '', diaSemana: 'LUNES', horaInicio: '', horaFin: '' }
@@ -53,8 +55,8 @@ export function CursosPanel({ query, onNotify }: { query: string; onNotify: (val
   }
 
   const aplicarFiltroPeriodo = () => {
-    if (periodoId && (!Number.isInteger(Number(periodoId)) || Number(periodoId) <= 0)) {
-      onNotify('Ingresá un ID de período válido.')
+    if (periodoId && (!Number.isInteger(Number(periodoId)) || Number(periodoId) < 1 || Number(periodoId) > 100)) {
+      onNotify('Ingresá un ID de período entre 1 y 100.')
       return
     }
     setFiltroPeriodo(periodoId ? Number(periodoId) : undefined)
@@ -66,7 +68,8 @@ export function CursosPanel({ query, onNotify }: { query: string; onNotify: (val
       !Number.isInteger(valores.asignaturaId) ||
       valores.asignaturaId <= 0 ||
       !Number.isInteger(valores.periodoId) ||
-      valores.periodoId <= 0 ||
+      valores.periodoId < 1 ||
+      valores.periodoId > 100 ||
       !Number.isInteger(valores.sedeId) ||
       valores.sedeId <= 0 ||
       !valores.modalidad.trim() ||
@@ -125,13 +128,13 @@ export function CursosPanel({ query, onNotify }: { query: string; onNotify: (val
         <div className="form-grid" style={{ alignItems: 'end' }}>
           <label>
             ID de período
-            <input
-              type="number"
-              min="1"
+            <select
               value={periodoId}
               onChange={(event) => setPeriodoId(event.target.value)}
-              placeholder="Todos los períodos"
-            />
+            >
+              <option value="">Todos los períodos</option>
+              {periodoIds.map((id) => <option key={id} value={id}>{id}</option>)}
+            </select>
           </label>
           <button className="secondary-button" type="button" onClick={aplicarFiltroPeriodo}>
             Aplicar filtro
@@ -154,7 +157,10 @@ export function CursosPanel({ query, onNotify }: { query: string; onNotify: (val
             </label>
             <label>
               ID de período
-              <input type="number" min="1" value={valores.periodoId || ''} onChange={(event) => setValores({ ...valores, periodoId: Number(event.target.value) })} />
+              <select value={valores.periodoId || ''} onChange={(event) => setValores({ ...valores, periodoId: Number(event.target.value) })}>
+                <option value="">Seleccioná un período...</option>
+                {periodoIds.map((id) => <option key={id} value={id}>{id}</option>)}
+              </select>
             </label>
             <label>
               ID de sede
@@ -172,14 +178,8 @@ export function CursosPanel({ query, onNotify }: { query: string; onNotify: (val
               Cupo máximo
               <input type="number" min="1" step="1" value={valores.cupoMaximo || ''} onChange={(event) => setValores({ ...valores, cupoMaximo: Number(event.target.value) })} />
             </label>
-            <label>
-              Fecha de inicio
-              <input type="date" value={valores.fechaInicio} onChange={(event) => setValores({ ...valores, fechaInicio: event.target.value })} />
-            </label>
-            <label>
-              Fecha de fin
-              <input type="date" value={valores.fechaFin} onChange={(event) => setValores({ ...valores, fechaFin: event.target.value })} />
-            </label>
+            <CalendarDatePicker label="Fecha de inicio" value={valores.fechaInicio} onChange={(fechaInicio) => setValores({ ...valores, fechaInicio })} />
+            <CalendarDatePicker label="Fecha de fin" value={valores.fechaFin} onChange={(fechaFin) => setValores({ ...valores, fechaFin })} />
           </div>
           <button className="primary-button" type="button" onClick={crear}><Check size={16} /> Guardar curso</button>
         </article>
@@ -375,17 +375,17 @@ function DetalleCurso({
         <h3>Inscribir alumno</h3>
         <div className="form-grid">
           <label>ID externo del alumno<input value={inscripcion.alumnoId} onChange={(event) => setInscripcion({ ...inscripcion, alumnoId: event.target.value })} /></label>
-          <label>Fecha de inscripción<input type="date" value={inscripcion.fechaInscripcion} onChange={(event) => setInscripcion({ ...inscripcion, fechaInscripcion: event.target.value })} /></label>
+          <CalendarDatePicker label="Fecha de inscripción" value={inscripcion.fechaInscripcion} onChange={(fechaInscripcion) => setInscripcion({ ...inscripcion, fechaInscripcion })} />
           <label>Estado<input value={inscripcion.estado} onChange={(event) => setInscripcion({ ...inscripcion, estado: event.target.value })} placeholder="Ej. INSCRIPTA" /></label>
         </div>
         <button className="secondary-button" type="button" onClick={inscribir}><Plus size={16} /> Inscribir</button>
         <h3>Actualizar resultado</h3>
         <div className="form-grid">
           <label>ID externo del alumno<input value={resultado.alumnoId} onChange={(event) => setResultado({ ...resultado, alumnoId: event.target.value })} /></label>
-          <label>Fecha de inscripción<input type="date" value={resultado.fechaInscripcion} onChange={(event) => setResultado({ ...resultado, fechaInscripcion: event.target.value })} /></label>
+          <CalendarDatePicker label="Fecha de inscripción" value={resultado.fechaInscripcion} onChange={(fechaInscripcion) => setResultado({ ...resultado, fechaInscripcion })} />
           <label>Estado<input value={resultado.estado} onChange={(event) => setResultado({ ...resultado, estado: event.target.value })} placeholder="Ej. APROBADA" /></label>
           <label>Nota final<input type="number" step="0.01" value={resultado.notaFinal ?? ''} onChange={(event) => setResultado({ ...resultado, notaFinal: event.target.value === '' ? null : Number(event.target.value) })} /></label>
-          <label>Fecha de resultado<input type="date" value={resultado.fechaResultado ?? ''} onChange={(event) => setResultado({ ...resultado, fechaResultado: event.target.value })} /></label>
+          <CalendarDatePicker label="Fecha de resultado" value={resultado.fechaResultado ?? ''} onChange={(fechaResultado) => setResultado({ ...resultado, fechaResultado })} />
         </div>
         <button className="secondary-button" type="button" onClick={guardarResultado}>Guardar resultado</button>
       </article>

@@ -1,6 +1,7 @@
 import { CalendarBlank, Check, WarningCircle } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { CalendarDatePicker } from '../../components/ui/CalendarDatePicker'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { crearPeriodo, listarPeriodos } from '../../services/periodos/periodosSlice'
 import { crearTurnoExamen, listarTurnosExamen } from '../../services/turnosExamen/turnosExamenSlice'
@@ -11,6 +12,7 @@ export function RealCycleView({ screen, query, onNotify }: { screen: Screen; que
 }
 
 const periodoVacio = { anio: '', numero: '1', fechaInicio: '', fechaFin: '' }
+const opcionesAnio = [1, 2, 3, 4, 5]
 
 function PeriodosPanel({ query, onNotify }: { query: string; onNotify: (v: string) => void }) {
   const dispatch = useAppDispatch()
@@ -42,15 +44,20 @@ function PeriodosPanel({ query, onNotify }: { query: string; onNotify: (v: strin
     {formAbierto && (
       <article className="panel" style={{ marginBottom: 18 }}>
         <div className="form-grid">
-          <label>Año<input type="number" min="2000" value={valores.anio} onChange={(e) => setValores({ ...valores, anio: e.target.value })} /></label>
+          <label>Año
+            <select value={valores.anio} onChange={(e) => setValores({ ...valores, anio: e.target.value })}>
+              <option value="">Seleccioná el año</option>
+              {opcionesAnio.map((anio) => <option key={anio} value={anio}>{anio}</option>)}
+            </select>
+          </label>
           <label>Número de cuatrimestre
             <select value={valores.numero} onChange={(e) => setValores({ ...valores, numero: e.target.value })}>
               <option value="1">1</option>
               <option value="2">2</option>
             </select>
           </label>
-          <label>Fecha de inicio<input type="date" value={valores.fechaInicio} onChange={(e) => setValores({ ...valores, fechaInicio: e.target.value })} /></label>
-          <label>Fecha de fin<input type="date" value={valores.fechaFin} onChange={(e) => setValores({ ...valores, fechaFin: e.target.value })} /></label>
+          <CalendarDatePicker label="Fecha de inicio" value={valores.fechaInicio} onChange={(fechaInicio) => setValores({ ...valores, fechaInicio })} />
+          <CalendarDatePicker label="Fecha de fin" value={valores.fechaFin} onChange={(fechaFin) => setValores({ ...valores, fechaFin })} />
         </div>
         <button className="primary-button" onClick={crear}><Check size={16} /> Guardar</button>
       </article>
@@ -96,10 +103,10 @@ function TurnosPanel({ query, onNotify }: { query: string; onNotify: (v: string)
       <article className="panel" style={{ marginBottom: 18 }}>
         <div className="form-grid">
           <label>Nombre<input value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} placeholder="Ej. Turno febrero 2027" /></label>
-          <label>Fecha de inicio<input type="date" value={valores.fechaInicio} onChange={(e) => setValores({ ...valores, fechaInicio: e.target.value })} /></label>
-          <label>Fecha de fin<input type="date" value={valores.fechaFin} onChange={(e) => setValores({ ...valores, fechaFin: e.target.value })} /></label>
-          <label>Inscripción desde<input type="date" value={valores.inscripcionDesde} onChange={(e) => setValores({ ...valores, inscripcionDesde: e.target.value })} /></label>
-          <label>Inscripción hasta<input type="date" value={valores.inscripcionHasta} onChange={(e) => setValores({ ...valores, inscripcionHasta: e.target.value })} /></label>
+          <CalendarDatePicker label="Fecha de inicio" value={valores.fechaInicio} onChange={(fechaInicio) => setValores({ ...valores, fechaInicio })} />
+          <CalendarDatePicker label="Fecha de fin" value={valores.fechaFin} onChange={(fechaFin) => setValores({ ...valores, fechaFin })} />
+          <CalendarDatePicker label="Inscripción desde" value={valores.inscripcionDesde} onChange={(inscripcionDesde) => setValores({ ...valores, inscripcionDesde })} />
+          <CalendarDatePicker label="Inscripción hasta" value={valores.inscripcionHasta} onChange={(inscripcionHasta) => setValores({ ...valores, inscripcionHasta })} />
         </div>
         <button className="primary-button" onClick={crear}><Check size={16} /> Guardar</button>
       </article>
