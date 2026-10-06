@@ -8,6 +8,7 @@ import { crearAula, listarAulas } from '../../services/aulas/aulasSlice'
 import { crearAsignacion, obtenerAgenda } from '../../services/asignaciones/asignacionesSlice'
 import { CursosPanel } from './CursosPanel'
 import type { Screen } from '../../types/domain'
+import './RealPlanningView.css'
 
 const opcionesCapacidadAula = Array.from({ length: 100 }, (_, index) => index + 1)
 const opcionesAsignacion = Array.from({ length: 100 }, (_, index) => index + 1)
@@ -78,6 +79,7 @@ function SelectorHora({ label, value, onChange }: { label: string; value: string
       <label>
         {label}
         <button
+          className="assignment-time-trigger"
           type="button"
           aria-haspopup="dialog"
           aria-expanded={abierto}
@@ -376,7 +378,7 @@ function AsignacionesPanel({ onNotify }: { onNotify: (v: string) => void }) {
   return <article className="panel">
     <p className="muted-copy">Los IDs de aula y asignatura se ven en las tablas de "Sedes y aulas" y "Asignaturas".</p>
     {error && <div className="form-error summary" role="alert"><WarningCircle size={15} /> {error}</div>}
-    <div className="form-grid">
+    <div className="form-grid assignment-form-grid">
       <label>ID de aula
         <select value={valores.aulaId} onChange={(e) => setValores({ ...valores, aulaId: e.target.value })}>
           <option value="">Seleccioná un aula...</option>
@@ -427,7 +429,12 @@ function AgendaPanel({ onNotify }: { onNotify: (v: string) => void }) {
 
   return <article className="panel">
     <div className="form-grid" style={{ maxWidth: 420 }}>
-      <label>ID de aula<input type="number" value={aulaId} onChange={(e) => setAulaId(e.target.value)} /></label>
+      <label>ID de aula
+        <select value={aulaId} onChange={(e) => setAulaId(e.target.value)}>
+          <option value="">Seleccioná un aula...</option>
+          {opcionesAsignacion.map((id) => <option key={id} value={id}>{id}</option>)}
+        </select>
+      </label>
       <CalendarDatePicker label="Fecha" value={fecha} onChange={setFecha} />
     </div>
     <button className="secondary-button" onClick={consultar}>Consultar agenda</button>

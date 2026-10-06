@@ -1,0 +1,9 @@
+.assignment-form-grid input,
+.assignment-form-grid select,
+.assignment-form-grid .calendar-picker__trigger,
+.assignment-form-grid .assignment-time-trigger {
+  height: 42px;
+  min-height: 42px;
+  font-size: 12px;
+  line-height: 20px;
+}
