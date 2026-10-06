@@ -40,7 +40,7 @@ export interface Asignatura {
   id: number
   codigo: string
   nombre: string
-  anio: string
+  anio: number
   creditos: number
   cargaHoraria: number
   estado: EstadoAcademico
@@ -49,7 +49,7 @@ export interface Asignatura {
 export interface CrearAsignatura {
   codigo: string
   nombre: string
-  anio: string
+  anio: number
   creditos: number
   cargaHoraria: number
 }

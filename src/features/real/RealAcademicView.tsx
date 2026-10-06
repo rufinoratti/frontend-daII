@@ -306,7 +306,7 @@ function AsignaturasPanel({ onNotify }: { onNotify: (value: string) => void }) {
     }
     const resultado = await dispatch(crearAsignatura({
       planId,
-      datos: { ...valores, creditos: Number(valores.creditos), cargaHoraria: Number(valores.cargaHoraria) },
+      datos: { ...valores, anio: Number(valores.anio), creditos: Number(valores.creditos), cargaHoraria: Number(valores.cargaHoraria) },
     }))
     if (crearAsignatura.fulfilled.match(resultado)) {
       onNotify('Asignatura creada correctamente')
