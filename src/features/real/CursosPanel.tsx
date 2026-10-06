@@ -136,7 +136,7 @@ export function CursosPanel({ query, onNotify }: { query: string; onNotify: (val
               {periodoIds.map((id) => <option key={id} value={id}>{id}</option>)}
             </select>
           </label>
-          <button className="secondary-button" type="button" onClick={aplicarFiltroPeriodo}>
+          <button className="secondary-button" type="button" onClick={aplicarFiltroPeriodo} style={{ height: 42, paddingBlock: 0 }}>
             Aplicar filtro
           </button>
         </div>
