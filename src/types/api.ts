@@ -99,8 +99,8 @@ export interface Asignacion {
   cantidadEstudiantes: number
 }
 export interface CrearAsignacion {
-  aulaId: number
-  asignaturaId: number
+  aula: { id: number }
+  asignatura: { id: number }
   fecha: string
   horaInicio: string
   horaFin: string
@@ -188,12 +188,16 @@ export interface PeriodoAcademico {
   numero: number
   fechaInicio: string
   fechaFin: string
+  inscripcionDesde: string
+  inscripcionHasta: string
 }
 export interface CrearPeriodoAcademico {
   anio: number
   numero: number
   fechaInicio: string
   fechaFin: string
+  inscripcionDesde: string
+  inscripcionHasta: string
 }
 
 export interface TurnoExamen {

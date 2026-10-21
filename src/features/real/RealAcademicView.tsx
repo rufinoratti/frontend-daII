@@ -93,6 +93,19 @@ function CarrerasPanel({ query, setQuery, onNotify }: { query: string; setQuery:
   }
 
   const guardar = async () => {
+    const requerido = [valores.codigo, valores.nombre, valores.facultad, valores.duracion, valores.titulo]
+    if (requerido.some((valor) => !valor.trim())) {
+      onNotify('Completá todos los campos de la carrera.')
+      return
+    }
+    if (!/^[A-Z0-9]+(?:-[A-Z0-9]+)*$/i.test(valores.codigo.trim())) {
+      onNotify('El código debe contener letras o números separados opcionalmente por guiones.')
+      return
+    }
+    if (!/^\d+\s*(años?|año|meses?)$/i.test(valores.duracion.trim())) {
+      onNotify('Indicá la duración como una cantidad de años o meses, por ejemplo: 5 años.')
+      return
+    }
     if (formAbierto === 'nueva') {
       const resultado = await dispatch(crearCarrera(valores))
       if (crearCarrera.fulfilled.match(resultado)) {
@@ -122,11 +135,11 @@ function CarrerasPanel({ query, setQuery, onNotify }: { query: string; setQuery:
       <article className="panel" style={{ marginBottom: 18 }}>
         <div className="panel-header"><div><h2>{formAbierto === 'nueva' ? 'Nueva carrera' : 'Editar carrera'}</h2></div><button className="text-button" onClick={() => setFormAbierto(null)}><X size={16} /></button></div>
         <div className="form-grid">
-          <label>Código<input value={valores.codigo} onChange={(e) => setValores({ ...valores, codigo: e.target.value })} placeholder="Ej. ING-INF" /></label>
-          <label>Nombre<input value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} placeholder="Ej. Ingeniería en Informática" /></label>
-          <label>Facultad<input value={valores.facultad} onChange={(e) => setValores({ ...valores, facultad: e.target.value })} placeholder="Ej. Facultad de Ingeniería" /></label>
-          <label>Duración<input value={valores.duracion} onChange={(e) => setValores({ ...valores, duracion: e.target.value })} placeholder="Ej. 5 años" /></label>
-          <label>Título que otorga<input value={valores.titulo} onChange={(e) => setValores({ ...valores, titulo: e.target.value })} placeholder="Ej. Ingeniero/a en Informática" /></label>
+          <label>Código<input required pattern="[A-Za-z0-9]+(-[A-Za-z0-9]+)*" maxLength={24} value={valores.codigo} onChange={(e) => setValores({ ...valores, codigo: e.target.value.replace(/[^\w-]/g, '') })} placeholder="Ej. ING-INF" /></label>
+          <label>Nombre<input required maxLength={120} value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value.replace(/[0-9]/g, '') })} placeholder="Ej. Ingeniería en Informática" /></label>
+          <label>Facultad<input required maxLength={120} value={valores.facultad} onChange={(e) => setValores({ ...valores, facultad: e.target.value.replace(/[0-9]/g, '') })} placeholder="Ej. Facultad de Ingeniería" /></label>
+          <label>Duración<input required inputMode="numeric" maxLength={20} value={valores.duracion} onChange={(e) => setValores({ ...valores, duracion: e.target.value.replace(/[^0-9 añosmes]/gi, '') })} placeholder="Ej. 5 años" /></label>
+          <label>Título que otorga<input required maxLength={120} value={valores.titulo} onChange={(e) => setValores({ ...valores, titulo: e.target.value.replace(/[0-9]/g, '') })} placeholder="Ej. Ingeniero/a en Informática" /></label>
         </div>
         <button className="primary-button" onClick={guardar}><Check size={16} /> Guardar</button>
       </article>
@@ -175,6 +188,14 @@ function PlanesPanel({ onNotify }: { onNotify: (value: string) => void }) {
 
   const crear = async () => {
     if (!carreraId) return
+    if (!/^ARQ1?-\d{3}$/i.test(valores.codigo.trim())) {
+      onNotify('El código debe tener el formato ARQ-001 o ARQ1-001.')
+      return
+    }
+    if (!valores.nombre.trim() || !valores.vigenciaDesde || !Number.isInteger(Number(valores.cantidadAsignaturas)) || Number(valores.cantidadAsignaturas) < 1) {
+      onNotify('Completá el año, la fecha de vigencia y una cantidad válida de asignaturas.')
+      return
+    }
     const resultado = await dispatch(crearPlanDeEstudio({
       carreraId,
       datos: { ...valores, cantidadAsignaturas: Number(valores.cantidadAsignaturas) },
@@ -231,8 +252,8 @@ function PlanesPanel({ onNotify }: { onNotify: (value: string) => void }) {
           {formAbierto && (
             <article className="panel" style={{ marginBottom: 18 }}>
               <div className="form-grid">
-                <label>Código<input value={valores.codigo} onChange={(e) => setValores({ ...valores, codigo: e.target.value })} placeholder="Ej. PLAN-2026" /></label>
-                <label>Nombre<input value={valores.nombre} onChange={(e) => setValores({ ...valores, nombre: e.target.value })} placeholder="Ej. Plan de estudio 2026" /></label>
+                <label>Código<input value={valores.codigo} maxLength={8} pattern="ARQ1?-\d{3}" onChange={(e) => setValores({ ...valores, codigo: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} placeholder="Ej. ARQ-001" /></label>
+                <label>Año del plan<select value={valores.nombre.replace('Plan de estudio ', '')} onChange={(e) => setValores({ ...valores, nombre: `Plan de estudio ${e.target.value}` })}><option value="">Seleccioná el año</option>{Array.from({ length: new Date().getFullYear() - 1999 + 5 }, (_, i) => 2000 + i).map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
                 <CalendarDatePicker label="Vigente desde" value={valores.vigenciaDesde} onChange={(vigenciaDesde) => setValores({ ...valores, vigenciaDesde })} />
                 <label>Cantidad de asignaturas<input type="number" min="0" value={valores.cantidadAsignaturas} onChange={(e) => setValores({ ...valores, cantidadAsignaturas: e.target.value })} /></label>
               </div>

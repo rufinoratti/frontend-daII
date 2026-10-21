@@ -11,6 +11,7 @@ import type { Screen } from '../../types/domain'
 import './RealPlanningView.css'
 
 const opcionesCapacidadAula = Array.from({ length: 100 }, (_, index) => index + 1)
+const opcionesNumeroAula = Array.from({ length: 100 }, (_, index) => index + 1)
 const opcionesAsignacion = Array.from({ length: 100 }, (_, index) => index + 1)
 const horasDisponibles = Array.from({ length: 17 }, (_, index) => index + 7)
 const minutosDisponibles = Array.from({ length: 12 }, (_, index) => index * 5)
@@ -203,7 +204,7 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
   const [formSede, setFormSede] = useState(false)
   const [nuevaSede, setNuevaSede] = useState({ nombre: '', direccion: '' })
   const [formAula, setFormAula] = useState(false)
-  const [nuevaAula, setNuevaAula] = useState({ codigo: '', nombre: '', capacidadMaxima: '' })
+  const [nuevaAula, setNuevaAula] = useState({ numero: '', capacidadMaxima: '' })
 
   useEffect(() => { dispatch(listarSedes()) }, [dispatch])
   useEffect(() => { if (sedeId) dispatch(listarAulas(sedeId)) }, [dispatch, sedeId])
@@ -227,18 +228,24 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
 
   const crearNuevaAula = async () => {
     if (!sedeId) return
+    if (!nuevaAula.numero) {
+      onNotify('Seleccioná el número de aula.')
+      return
+    }
     const capacidadMaxima = Number(nuevaAula.capacidadMaxima)
     if (!Number.isInteger(capacidadMaxima) || capacidadMaxima < 1 || capacidadMaxima > 100) {
       onNotify('Seleccioná una capacidad máxima entre 1 y 100.')
       return
     }
+    const nombreAula = `Aula ${nuevaAula.numero}`
     const resultado = await dispatch(crearAula({ sedeId, datos: {
-      codigo: nuevaAula.codigo.trim(), capacidadMaxima,
-      nombre: nuevaAula.nombre.trim(),
+      codigo: nombreAula,
+      nombre: nombreAula,
+      capacidadMaxima,
     } }))
     if (crearAula.fulfilled.match(resultado)) {
       onNotify('Aula creada correctamente')
-      setNuevaAula({ codigo: '', nombre: '', capacidadMaxima: '' })
+      setNuevaAula({ numero: '', capacidadMaxima: '' })
       setFormAula(false)
     }
   }
@@ -321,8 +328,12 @@ function SedesYAulasPanel({ query, onNotify }: { query: string; onNotify: (v: st
           {formAula && (
             <article className="panel" style={{ marginBottom: 18 }}>
               <div className="form-grid">
-                <label>Código<input value={nuevaAula.codigo} onChange={(e) => setNuevaAula({ ...nuevaAula, codigo: e.target.value })} placeholder="Ej. Aula 204" /></label>
-                <label>Nombre (opcional)<input maxLength={255} value={nuevaAula.nombre} onChange={(e) => setNuevaAula({ ...nuevaAula, nombre: e.target.value })} placeholder="Ej. Aula de informática" /></label>
+                <label>Número de aula
+                  <select value={nuevaAula.numero} onChange={(e) => setNuevaAula({ ...nuevaAula, numero: e.target.value })}>
+                    <option value="">Seleccioná un número...</option>
+                    {opcionesNumeroAula.map((numero) => <option key={numero} value={numero}>{numero}</option>)}
+                  </select>
+                </label>
                 <label>Capacidad máxima
                   <select value={nuevaAula.capacidadMaxima} onChange={(e) => setNuevaAula({ ...nuevaAula, capacidadMaxima: e.target.value })}>
                     <option value="">Seleccioná una capacidad...</option>
@@ -353,12 +364,20 @@ function AsignacionesPanel({ onNotify }: { onNotify: (v: string) => void }) {
 
   const crear = async () => {
     const valoresNumericos = [valores.aulaId, valores.asignaturaId, valores.cantidadEstudiantes]
-    if (valoresNumericos.some((valor) => !Number.isInteger(Number(valor)) || Number(valor) < 1 || Number(valor) > 100)) {
-      onNotify('Seleccioná valores entre 1 y 100 para aula, asignatura y cantidad de estudiantes.')
+    if (valoresNumericos.some((valor) => !Number.isInteger(Number(valor)) || Number(valor) < 1)) {
+      onNotify('Seleccioná IDs válidos y una cantidad de estudiantes mayor que cero.')
       return
     }
     if (!valores.horaInicio || !valores.horaFin) {
       onNotify('Seleccioná la hora de inicio y de fin.')
+      return
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(valores.fecha)) {
+      onNotify('La fecha debe tener el formato AAAA-MM-DD.')
+      return
+    }
+    if (!/^\d{2}:\d{2}$/.test(valores.horaInicio) || !/^\d{2}:\d{2}$/.test(valores.horaFin)) {
+      onNotify('Seleccioná una hora de inicio y una hora de fin válidas.')
       return
     }
     if (valores.horaInicio >= valores.horaFin) {
@@ -366,11 +385,11 @@ function AsignacionesPanel({ onNotify }: { onNotify: (v: string) => void }) {
       return
     }
     const resultado = await dispatch(crearAsignacion({
-      aulaId: Number(valores.aulaId),
-      asignaturaId: Number(valores.asignaturaId),
+      aula: { id: Number(valores.aulaId) },
+      asignatura: { id: Number(valores.asignaturaId) },
       fecha: valores.fecha,
-      horaInicio: valores.horaInicio,
-      horaFin: valores.horaFin,
+      horaInicio: `${valores.horaInicio}:00`,
+      horaFin: `${valores.horaFin}:00`,
       cantidadEstudiantes: Number(valores.cantidadEstudiantes),
     }))
     if (crearAsignacion.fulfilled.match(resultado)) {

@@ -15,7 +15,13 @@ export function extraerMensajeError(
   mensajePorDefecto = 'Ocurrio un error al comunicarse con el servidor',
 ): string {
   if (isAxiosError<CuerpoErrorApi>(error)) {
-    if (error.response?.data?.mensaje) return error.response.data.mensaje
+    if (error.response?.data?.mensaje) {
+      const { mensaje, errores } = error.response.data
+      const detalles = errores
+        ? Object.entries(errores).map(([campo, detalle]) => `${campo}: ${detalle}`).join('; ')
+        : ''
+      return detalles ? `${mensaje}. ${detalles}` : mensaje
+    }
     if (error.response?.status === 401) return 'Debes iniciar sesion para continuar'
     if (error.response?.status === 403) return 'No tenes permisos para realizar esta accion'
     if (!error.response) return 'No se pudo conectar con el servidor'
